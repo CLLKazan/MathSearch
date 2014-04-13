@@ -14,3 +14,8 @@ Online demo
 -----------
 
 Please try the demo hosted on [our server](http://cll.niimm.ksu.ru/mathsearch/).
+
+License
+---------------------
+
+Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
