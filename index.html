@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang = "en">
+  <head>
+    <meta charset = "utf-8">
+    
+    <title>Finding Concepts in Mathematical Formulas</title>
+
+    <meta name = "author" content = "Alik Kirillovich, 2014">
+    
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1">
+    
+    <link href = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel = "stylesheet">
+    <link href = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel = "stylesheet">
+    <link href = "http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel = "stylesheet">
+    <link href = "Libs/typeahead/typeaheadjs.css" rel = "stylesheet">
+    <link href = "index.css" rel = "stylesheet">
+    
+    <!--[if lt IE 9]>
+      <script src = "https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src = "https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <script src = "Libs/polyfills/polyfill.ie.js"></script>
+    <![endif]-->
+    
+    <script src = "http://yandex.st/jquery/1.11.0/jquery.min.js"></script>
+    <script src = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src = "http://ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1.js"></script>
+    <script src = "http://s3.amazonaws.com/es6-promises/promise-0.1.1.min.js"></script>
+    <script src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src = "Libs/typeahead/bootstrap3-typeahead.min.js"></script>
+    <script src = "Libs/sparql/sparql.js"></script>
+    
+    <script src = "index.js"></script>
+    <script src = "index.custombindings.js"></script>
+    
+  </head>
+  <body>
+    
+    <div class = "container">
+      <h1>
+        Finding Concepts in Mathematical Formulas
+        <sup><small><i>alpha</i></small></sup>
+      </h1>
+      
+      <form id = "frmSearch" class = "panel panel-default navbar-default">
+        <div class = "panel-body">
+        
+          <div class = "form-group">
+            <div id = "divConceptURI" class = "input-group">
+              <input type = "text" id = "tbConceptURI" data-bind = "value: conceptURI, valueUpdate: 'input', typeahead: concepts"
+                     placeholder = "OntoMathPro concept label or DBpedia concept URI" data-content = "Please enter a search query!" data-placement = "bottom" class = "form-control concepts typeahead">
+              <span class="input-group-btn">
+                <button type = "button" id = "btnGo" data-bind = "loading: loadingIndicator.loading" class = "btn btn-primary" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Please, wait...">
+                  Get instances!
+                </button>
+              </span>
+            </div>
+            
+            <p id = "spnExamples" class = "help-block">
+              Examples: <a>Angle</a>, <a>Ring</a>, <a>Graph</a>, <a>Open set</a>, <a>Prime number</a>, <a>Gamma function</a>, <a>Space</a>
+            </p>
+          </div>
+          
+          <hr>
+          
+          <div id = "divContext" data-bind = "foreach: segmentTypes">
+            <label class = "checkbox-inline">
+              <input type = "checkbox" data-bind="checked: isChecked">
+              <span data-bind = "text: name"></span>
+              <span data-bind = "slideVisible: $root.results.visible" class = "count">(<span data-bind = "text: count"></span>)</span>
+            </label>
+          </div>
+          
+        </div>
+      </form>
+      
+      <div id = "divError" data-bind = "visible: errorMessage.visible" class = "alert alert-danger">
+        <h5>Error!</h5>
+        <span data-bind = "text: errorMessage.text"></span>
+      </div>
+      
+      <div id = "divResult" data-bind = "visible: results.visible">
+      
+        <h5 data-bind = "visible: instancesFiltred.count">
+          <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
+          concept instances
+          (<span class = "count" data-bind = "text: instancesFiltred.count"></span>):
+        </h5>
+        
+        <h5 data-bind = "visible: !instancesFiltred.count()">
+          Can’t find <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
+          concept instances<span class = "count" data-bind = "visible: instances().length"> in the selected context</span>.
+        </h5>
+        
+        <table data-bind = "visible: instancesFiltred.count" class = "table table-hover">
+          <thead>
+            <tr>
+              <th class = "notation">Notation</th>
+              <th>Formula</th>
+              <th>Context</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody data-bind = "foreach: {data: instances, afterRender: mj}">
+            <tr data-bind = "visible: isVisible">
+              <td>
+                <img data-bind = "attr: {src: notation.imgSrc, alt: notation.latexSource}, visible: !$root.config.useMathJax()">
+                <div data-bind = "text: notation.latexMathJax, visible: $root.config.useMathJax()"></div>
+              </td>
+              <td>
+                <img data-bind = "attr: {src: formula.imgSrc, alt: formula.latexSource}, visible: !$root.config.useMathJax()">
+                <div data-bind = "text: formula.latexMathJax, visible: $root.config.useMathJax()"></div>
+              </td>
+              <td data-bind = "text: segmentType().name"></td>
+              <td>
+                <button data-bind = "click: showDetails" class = "btn btn-default details">Details...</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+          
+        <div style = "text-align: center">
+          <button id = "btnLoadMore" data-bind = "loading: loadingIndicator.loading, visibility: !query.isAllLoaded()" class = "btn btn-default btn-lg" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Loading...">
+            More
+          </button>
+        </div>
+
+      </div>
+      
+    </div>
+    
+    <div id = "divDetails" data-bind = "with: Details, modalOpened: (Details.status() == 'opened')" class = "modal  fade" tabindex = "-1" data-keyboard = "true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        
+          <div class = "modal-header">
+            <button type = "button" class = "close" data-dismiss = "modal">&times;</button>
+            <h4>Details</h4>
+          </div>
+          
+          <div class = "modal-body">
+          
+            <div id = "divFormula" style = "padding-bottom: 1em; padding-top: 0.5em">
+              <img data-bind = "attr: {src: formula().imgSrc}, visible: !$root.config.useMathJax()">
+              <div data-bind = "text: formula().latexMathJax, visible: $root.config.useMathJax()"></div>
+            </div>
+            
+            <h5 style = "padding-top: 0.5em">Variables</h5>
+            
+            <div id = "divVariables">
+            
+              <table class = "table" data-bind = "visible: variables.status() == 'done'">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Variable</th>
+                    <th>Class</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-bind = "foreach: variables.list">
+                  <tr>
+                    <td data-bind = "text: $index()+1"></td>
+                    <td>
+                      <img data-bind = "attr: {src: imgSrc}, visible: !$root.config.useMathJax()">
+                      <div data-bind = "text: latexMathJax, visible: $root.config.useMathJax()"></div>
+                    </td>
+                    <td data-bind = "text: classLabel"></td>
+                    <td>
+                      <a class = "classlabel" data-bind = "attr: {title: classLabel}"><i class = "fa fa-search"></i></a>
+                   </td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div id = "divJournal" data-bind = "visible: variables.status() == 'loading'" class = "text-muted">
+                <i class = "fa fa-spinner fa-spin"></i> Loading...
+              </div>
+              
+              <div id = "divJournal" data-bind = "visible: variables.status() == 'error'" class = "text-danger">
+                Error
+              </div>
+            </div>
+            
+            
+            <h5>Metadata</h5>
+            
+            <div id = "divJournal" data-bind = "with: metadata, visible: metadata.status() == 'done'">
+              <span data-bind = "foreach: article.authors">
+                <a data-bind = "attr: {href: url}" target = "_blank"><span data-bind = "text: name"></span><i class="fa fa-external-link"></i></a><span data-bind = "visible: isNotLast">, </span>
+              </span>
+              <br>
+              <a data-bind = "attr: {href: article.url}" target = "_blank"><span data-bind = "text: article.title"></span><i class="fa fa-external-link"></i></a>
+              <span class = "pdf">(<a data-bind = "attr: {href: article.pdfUrl}" target = "_blank">PDF<i class = "fa fa-external-link"></i></a>)</span>
+              <br>
+              In: <em data-bind = "text: journal.title"></em>,
+              <span data-bind = "text: journal.year"></span>,
+              <a data-bind = "attr: {href: journal.issueUrl}" target = "_blank">num. <span data-bind = "text: journal.issueNumber"></span><i class="fa fa-external-link"></i></a>,
+              pp. <span data-bind = "text: article.pages"></span>
+            </div>
+            
+            <div id = "divJournal" data-bind = "visible: metadata.status() == 'loading'" class = "text-muted">
+              <i class = "fa fa-spinner fa-spin"></i> Loading...
+            </div>
+            
+            <div id = "divJournal" data-bind = "visible: metadata.status() == 'error'" class = "text-danger">
+              Error
+            </div>
+            
+          </div>
+          
+          <div class = "modal-footer">
+            <button class = "btn btn-default" data-dismiss = "modal">Close</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <div id = "divAbout" class = "modal fade" tabindex = "-1" data-keyboard = "true">
+      <div class = "modal-dialog modal-lg">
+        <div class = "modal-content">
+        
+          <div class = "modal-header">
+            <button type = "button" class = "close" data-dismiss = "modal">&times;</button>
+            <h4>About</h4>
+          </div>
+          
+          <div class = "modal-body">
+          
+            <dl class = "dl-horizontal">
+              <dt>Developers:</dt>
+              <dd>
+                <ul class = "list-unstyled">
+                  <li>Alik Kirillovich,</li>
+                  <li>Nikita Zhiltsov</li>
+                </ul>
+              </dd>
+              
+              <dt>Researchers:</dt>
+              <dd>
+                <ul class = "list-unstyled">
+                  <li>Olga Nevzorova,</li>
+                  <li>Nikita Zhiltsov,</li>
+                  <li>Danila Zaikin,</li>
+                  <li>Olga Zhibrik,</li>
+                  <li>Alik Kirillovich,</li>
+                  <li>Vladimir Nevzorov,</li>
+                  <li>Evgeniy Birialtsev</li>
+                </ul>
+              </dd>
+              
+              <dt>Powered by:</dt>
+              <dd>
+                <ul class = "list-inline">
+                  <li><a href = "http://jquery.com/">jQuery</a>,</li>
+                  <li><a href = "http://knockoutjs.com/">KnockoutJS</a>,</li>
+                  <li><a href = "http://getbootstrap.com/">Bootstrap</a>,</li>
+                  <li><a href = "https://github.com/jakearchibald/es6-promise">ES6-Promises</a>,</li>
+                  <li><a href = "http://www.thefigtrees.net/lee/blog/2006/04/sparql_calendar_demo_a_sparql.html">SPARQL JavaScript library</a>,</li>
+                  <li><a href = "http://www.mathjax.org/">MathJax</a></li>
+                </ul>
+              </dd>
+              
+              <dt>Actual dataset:</dt>
+              <dd>
+                <ul class = "list-unstyled">
+                  <li>
+                    1 330 articles of the „Izvestiya Vuzov. Matematika“
+                    („Proceedings of Higher Education Institutions: Mathematics“) journal published in 1997–2009
+                  </li>
+                </ul>
+              </dd>
+              
+              <dt>Our publications:</dt>
+              <dd>
+                <ol class2 = "list-unstyled">
+                  <li>
+                    O. Nevzorova, N. Zhiltsov, D. Zaikin, O. Zhibrik, A. Kirillovich, V. Nevzorov, E. Birialtsev.<br>
+                    Bringing Math to LOD: A Semantic Publishing Platform Prototype for Scientific Collections in Mathematics<br>
+                    In: 12th International Semantic Web Conference, Sydney, NSW, Australia, October 21-25, 2013, Proceedings, Part I. –
+                    Vol. 8218. – Springer Berlin Heidelberg. – 2013.
+                    <a href = "http://link.springer.com/chapter/10.1007%2F978-3-642-41335-3_24">pp 379-394</a>
+                  </li>
+                </ol>
+              </dd>
+            </dl>
+            
+          </div>
+          
+          <div class = "modal-footer">
+            <button class = "btn btn-default" data-dismiss = "modal">Close</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+      
+    <footer class = "navbar navbar-default navbar-fixed-bottom container" role = "navigation" style = "opacity: 0.95; margin-bottom: -5px">
+      <div class = ""> 
+        <p class = "navbar-text">&copy; <a href = "http://cll.niimm.ksu.ru">Computational Linguistics Laboratory</a> at Kazan Federal University, 2014</p>
+
+        <ul class = "nav navbar-nav navbar-right">
+          <li class = "dropdown">
+            <a id = "options-button" class = "btn dropdown-toggle btn-link" type = "button" data-toggle = "dropdown" title = "Options" data-toggle = "tooltip">
+             <i class = "fa fa-gear"></i>
+            </a>
+            <ul class = "dropdown-menu dropdown-menu-right" role = "menu" aria-labelledby = "options-button">
+              <li role = "presentation">
+                <a role = "menuitem">
+                  <label class = "checkbox-inline">
+                    <input type = "checkbox" data-bind = "checked: config.useMathJax"><small>Use MathJax</small>
+                  </label>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a class = "btn btn-link" type = "button" data-toggle = "modal" data-target = "#divAbout" title = "About" data-toggle = "tooltip">
+              <i class = "fa fa-question-circle"></i>
+            </a>
+          </li>
+        </ul>
+        
+      </div>
+    </footer>
+    
+  </body>
+</html>
+           
+           
+           
+           
+           
+                            
+                            
+                            
+                            

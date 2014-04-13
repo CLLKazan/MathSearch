@@ -1,0 +1,190 @@
+﻿h1
+  {
+  font-family: "Times New Roman";
+  font-weight: normal;
+  font-size: 32px;
+  }
+
+#frmSearch
+  {
+  background-color: #F5F5F5;
+  }
+  #frmSearch .panel-body
+    {
+    padding-bottom: 12px;
+    }
+
+#divConceptURI
+  {
+  margin-left: -3px;
+  }
+  
+#spnExamples
+  {
+  font-size: smaller;
+  margin-top: 0.5em;
+  }
+
+#spnExamples a
+  {
+  text-decoration: none;
+  border-bottom: 1px dotted;
+  cursor: pointer;
+  transition: color 0.3s ease-out;
+  }
+  #spnExamples a:hover
+    {
+    color: #d04000;
+    border-bottom-color: #d04000;
+    transition: color 0s ease-out;
+    }
+
+#frmSearch hr
+  {
+  margin-top: 7px;
+  margin-bottom: 5px;
+  }
+    
+#divContext .checkbox-inline+.checkbox-inline 
+   {
+   margin-left: 0;
+   }
+#divContext .checkbox-inline
+  {
+  width: 9em;
+  /*border: 1px solid red;*/
+  padding-top: 3px;
+  padding-bottom: 2px;
+  }
+  
+label.checkbox-inline
+  {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  }
+
+#divContext label .count
+  {
+  font-size: smaller;
+  color: darkgray;
+  }
+
+h5
+  {
+  font-family: "Times New Roman";
+  font-weight: normal;
+  font-size: larger;
+  }
+
+#divResult table th.notation
+  {
+  padding-left: 0px;
+  }
+#divResult table td
+  {
+  vertical-align: middle;
+  }
+#divResult table td.context
+  {
+  font-size: smaller;
+  }
+#divResult table td .details
+  {
+  float: right;
+  }
+
+#btnLoadMore
+  {
+  width: 15em;
+  }
+
+#divVariables table
+  {
+  width: auto;
+  }
+  
+#divVariables .classlabel
+  {
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease-out;
+  }
+#divVariables .classlabel:hover
+  {
+  color: #d04000;
+  transition: color 0s ease-out;
+  }
+
+#divJournal .pdf
+  {
+  white-space: nowrap;
+  }
+
+.fa-external-link
+  {
+  padding-left: 0.35em;
+  }
+
+.btn
+  {
+  outline: none !important;
+  }
+
+@-webkit-keyframes anim1 {from {background-color: lightyellow ;} to {}}
+        @keyframes anim1 {from {background-color: lightyellow ;} to {}}
+#divResult table tr td
+  {
+  -webkit-animation: anim1 1.5s;
+          animation: anim1 1.5s;
+  }
+
+#divAbout dl ul, #divAbout dl ol
+  {
+  padding-left: 15px;
+  }
+
+footer i.fa
+  {
+  font-size: 1.2em;
+  }
+  
+#divAbout .list-inline>li
+  {
+  padding-right: 0px;
+  }
+body
+  {
+  padding-bottom: 100px;
+  overflow-y: scroll;
+  }
+
+body.modal-open
+  {
+  /*overflow-y: auto;*/
+  }
+
+::-webkit-scrollbar
+  {
+  width: 12px;
+  }
+::-webkit-scrollbar-track
+  {
+  background: white; 
+  }
+::-webkit-scrollbar-thumb
+  {
+  border-radius: 3px;
+  border: 1px solid rgba(190, 190, 190, 1);
+  background: rgba(240,240,240,1);
+  }
+::-webkit-scrollbar-thumb:hover
+  {
+  background: rgba(230,230,230,1);
+  }
+::-webkit-scrollbar-thumb:active
+  {
+  border-color: rgba(160, 160, 160, 1);
+  background: rgba(216, 216, 216, 1);
+  }
+  
