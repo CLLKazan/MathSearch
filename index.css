@@ -5,51 +5,51 @@
   font-size: 32px;
   }
 
-#frmSearch
+#search
   {
   background-color: #F5F5F5;
   }
-  #frmSearch .panel-body
+  #search .panel-body
     {
     padding-bottom: 12px;
     }
 
-#divConceptURI
+#concept-uri-wrapper
   {
   margin-left: -3px;
   }
   
-#spnExamples
+#examples
   {
   font-size: smaller;
   margin-top: 0.5em;
   }
 
-#spnExamples a
+#examples a
   {
   text-decoration: none;
   border-bottom: 1px dotted;
   cursor: pointer;
   transition: color 0.3s ease-out;
   }
-  #spnExamples a:hover
+  #examples a:hover
     {
     color: #d04000;
     border-bottom-color: #d04000;
     transition: color 0s ease-out;
     }
 
-#frmSearch hr
+#search hr
   {
   margin-top: 7px;
   margin-bottom: 5px;
   }
     
-#divContext .checkbox-inline+.checkbox-inline 
-   {
-   margin-left: 0;
-   }
-#divContext .checkbox-inline
+#context .checkbox-inline+.checkbox-inline 
+  {
+  margin-left: 0;
+  }
+#context .checkbox-inline
   {
   width: 9em;
   /*border: 1px solid red;*/
@@ -64,7 +64,7 @@ label.checkbox-inline
   -ms-user-select: none;
   }
 
-#divContext label .count
+#context label .count
   {
   font-size: smaller;
   color: darkgray;
@@ -77,49 +77,86 @@ h5
   font-size: larger;
   }
 
-#divResult table th.notation
+#result table th.notation
   {
   padding-left: 0px;
   }
-#divResult table td
+#result table td
   {
   vertical-align: middle;
   }
-#divResult table td.context
+#result table td.context
   {
   font-size: smaller;
   }
-#divResult table td .details
+#result table td .show-details
   {
   float: right;
   }
 
-#btnLoadMore
+#load-more-wrapper
+  {
+  text-align: center;
+  }
+#load-more
   {
   width: 15em;
   }
 
-#divVariables table
+#formula
+  {
+  padding-bottom: 1em;
+  padding-top: 0.5em
+  }
+  
+#variables-header
+  {
+  padding-top: 0.5em;
+  }
+  
+#variables table
   {
   width: auto;
   }
   
-#divVariables .classlabel
+#variables .classlabel
   {
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s ease-out;
   }
-#divVariables .classlabel:hover
+#variables .classlabel:hover
   {
   color: #d04000;
   transition: color 0s ease-out;
   }
 
-#divJournal .pdf
+#journal .pdf
   {
   white-space: nowrap;
   }
+
+#about dl ul, #about dl ol
+  {
+  padding-left: 15px;
+  }
+
+#about .list-inline>li
+  {
+  padding-right: 0px;
+  }
+  
+#footer
+  {
+  opacity: 0.95;
+  margin-bottom: -5px;
+  }
+
+#footer .nav i.fa
+  {
+  font-size: 1.2em;
+  }
+
 
 .fa-external-link
   {
@@ -133,56 +170,41 @@ h5
 
 @-webkit-keyframes anim1 {from {background-color: lightyellow ;} to {}}
         @keyframes anim1 {from {background-color: lightyellow ;} to {}}
-#divResult table tr td
+#result table tr td
   {
   -webkit-animation: anim1 1.5s;
           animation: anim1 1.5s;
   }
 
-#divAbout dl ul, #divAbout dl ol
-  {
-  padding-left: 15px;
-  }
-
-footer i.fa
-  {
-  font-size: 1.2em;
-  }
-  
-#divAbout .list-inline>li
-  {
-  padding-right: 0px;
-  }
 body
   {
   padding-bottom: 100px;
   overflow-y: scroll;
   }
 
-body.modal-open
+body.modal-open, .modal
   {
-  /*overflow-y: auto;*/
+  overflow-y: hidden;
   }
-
-::-webkit-scrollbar
+body::-webkit-scrollbar
   {
   width: 12px;
   }
-::-webkit-scrollbar-track
+body::-webkit-scrollbar-track
   {
   background: white; 
   }
-::-webkit-scrollbar-thumb
+body::-webkit-scrollbar-thumb
   {
   border-radius: 3px;
   border: 1px solid rgba(190, 190, 190, 1);
   background: rgba(240,240,240,1);
   }
-::-webkit-scrollbar-thumb:hover
+body::-webkit-scrollbar-thumb:hover
   {
   background: rgba(230,230,230,1);
   }
-::-webkit-scrollbar-thumb:active
+body::-webkit-scrollbar-thumb:active
   {
   border-color: rgba(160, 160, 160, 1);
   background: rgba(216, 216, 216, 1);

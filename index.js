@@ -102,7 +102,7 @@
       "    {"+
       "    ?concept rdfs:subClassOf <http://cll.niimm.ksu.ru/ontologies/mathematics#E34> option (transitive)."+
       "    ?concept rdfs:label ?label."+
-      "    FILTER (lang(?label) = 'en')"+
+      //"    FILTER (lang(?label) = 'en')"+
       "    }"+
       "  UNION"+
       "    {"+
@@ -123,6 +123,7 @@
           {
           arConcepts [arConcepts.length] = strKey;
           hshConcepts [strKey] = strConceptURI;
+
           }
         })
       self.concepts (arConcepts);
@@ -131,7 +132,7 @@
       })
     ["catch"] (function (e)
       {
-      console.log (e);
+      //console.log (e);
       self.errorMessage.text (e.message || e.responseText || "");
       self.status ("error");
       })
@@ -541,18 +542,18 @@ $(document).ready(function()
     Application.searchNew ();
     });
     
-  $("#btnLoadMore").on ("click", function ()
+  $("#load-more").on ("click", function ()
     {
     Application.searchMore ();
     });
   
-  $("#frmSearch").on ("submit", function (event)
+  $("#search").on ("submit", function (event)
     {
     Application.searchNew ();
     event.preventDefault();
     }); 
   
-  $("#divDetails").on("hidden.bs.modal", function (e)
+  $("#details").on("hidden.bs.modal", function (e)
     {
     Application.Details.status ("closed");
     });
@@ -560,31 +561,31 @@ $(document).ready(function()
   Application.emptyQueryMessage.visible.subscribe (function (isError)
     {
     if (isError)
-      $("#tbConceptURI").popover({trigger: "manual"}).popover("show").focus ();
+      $("#concept-uri").popover({trigger: "manual"}).popover("show").focus ();
     else
-      $("#tbConceptURI").popover("hide");
+      $("#concept-uri").popover("hide");
     });
   Application.conceptURI.subscribe (function (strValue)
     {
     if (strValue != "") Application.emptyQueryMessage.visible (false);
     });
-  $("#tbConceptURI").on ("blur", function ()
+  $("#concept-uri").on ("blur", function ()
     {
     Application.emptyQueryMessage.visible (false);
     });
     
-  $("#spnExamples a").on ("click", function ()
+  $("#examples a").on ("click", function ()
     {
     Application.searchNew ($(this).text());
     });
     
-  $("#divDetails").on ("click", ".classlabel", function ()
+  $("#details").on ("click", ".classlabel", function ()
     {
     Application.searchNew (ko.dataFor(this).classLabel);
     Application.Details.status ("closed");
     });
   
-  $("a[data-toggle]").tooltip();
+  $("[data-toggle=tooltip]").tooltip();
   
   (function ()
     {

@@ -13,7 +13,6 @@
     <link href = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel = "stylesheet">
     <link href = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel = "stylesheet">
     <link href = "http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel = "stylesheet">
-    <link href = "Libs/typeahead/typeaheadjs.css" rel = "stylesheet">
     <link href = "index.css" rel = "stylesheet">
     
     <!--[if lt IE 9]>
@@ -27,8 +26,10 @@
     <script src = "http://ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1.js"></script>
     <script src = "http://s3.amazonaws.com/es6-promises/promise-0.1.1.min.js"></script>
     <script src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script src = "Libs/typeahead/bootstrap3-typeahead.min.js"></script>
+    <script src = "Libs/bootstrap3-typeahead/bootstrap3-typeahead.min.js"></script>
     <script src = "Libs/sparql/sparql.js"></script>
+    
+    <script src = "http://widget.uservoice.com/5UzptFfvlVZs4fvV4C5lA.js"></script>
     
     <script src = "index.js"></script>
     <script src = "index.custombindings.js"></script>
@@ -42,12 +43,12 @@
         <sup><small><i>alpha</i></small></sup>
       </h1>
       
-      <form id = "frmSearch" class = "panel panel-default navbar-default">
+      <form id = "search" class = "panel panel-default navbar-default">
         <div class = "panel-body">
         
           <div class = "form-group">
-            <div id = "divConceptURI" class = "input-group">
-              <input type = "text" id = "tbConceptURI" data-bind = "value: conceptURI, valueUpdate: 'input', typeahead: concepts"
+            <div id = "concept-uri-wrapper" class = "input-group">
+              <input type = "text" id = "concept-uri" data-bind = "value: conceptURI, valueUpdate: 'input', typeahead: concepts"
                      placeholder = "OntoMathPro concept label or DBpedia concept URI" data-content = "Please enter a search query!" data-placement = "bottom" class = "form-control concepts typeahead">
               <span class="input-group-btn">
                 <button type = "button" id = "btnGo" data-bind = "loading: loadingIndicator.loading" class = "btn btn-primary" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Please, wait...">
@@ -56,16 +57,16 @@
               </span>
             </div>
             
-            <p id = "spnExamples" class = "help-block">
+            <p id = "examples" class = "help-block">
               Examples: <a>Angle</a>, <a>Ring</a>, <a>Graph</a>, <a>Open set</a>, <a>Prime number</a>, <a>Gamma function</a>, <a>Space</a>
             </p>
           </div>
           
           <hr>
           
-          <div id = "divContext" data-bind = "foreach: segmentTypes">
+          <div id = "context" data-bind = "foreach: segmentTypes">
             <label class = "checkbox-inline">
-              <input type = "checkbox" data-bind="checked: isChecked">
+              <input type = "checkbox" data-bind = "checked: isChecked">
               <span data-bind = "text: name"></span>
               <span data-bind = "slideVisible: $root.results.visible" class = "count">(<span data-bind = "text: count"></span>)</span>
             </label>
@@ -74,12 +75,12 @@
         </div>
       </form>
       
-      <div id = "divError" data-bind = "visible: errorMessage.visible" class = "alert alert-danger">
+      <div id = "error" data-bind = "visible: errorMessage.visible" class = "alert alert-danger">
         <h5>Error!</h5>
         <span data-bind = "text: errorMessage.text"></span>
       </div>
       
-      <div id = "divResult" data-bind = "visible: results.visible">
+      <div id = "result" data-bind = "visible: results.visible">
       
         <h5 data-bind = "visible: instancesFiltred.count">
           <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
@@ -95,9 +96,15 @@
         <table data-bind = "visible: instancesFiltred.count" class = "table table-hover">
           <thead>
             <tr>
-              <th class = "notation">Notation</th>
-              <th>Formula</th>
-              <th>Context</th>
+              <th class = "notation">
+                <span title = "Symbolic interpretation of the found concept" data-toggle = "tooltip">Notation</span>
+              </th>
+              <th>
+                <span title = "Formula, in which the notation element occurs" data-toggle = "tooltip">Formula</span>
+              </th>
+              <th>
+                <span title = "Document part, which contains the formula" data-toggle = "tooltip">Context</span>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -113,14 +120,14 @@
               </td>
               <td data-bind = "text: segmentType().name"></td>
               <td>
-                <button data-bind = "click: showDetails" class = "btn btn-default details">Details...</button>
+                <button data-bind = "click: showDetails" class = "btn btn-default show-details">Details...</button>
               </td>
             </tr>
           </tbody>
         </table>
           
-        <div style = "text-align: center">
-          <button id = "btnLoadMore" data-bind = "loading: loadingIndicator.loading, visibility: !query.isAllLoaded()" class = "btn btn-default btn-lg" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Loading...">
+        <div id = "load-more-wrapper">
+          <button id = "load-more" data-bind = "loading: loadingIndicator.loading, visibility: !query.isAllLoaded()" class = "btn btn-default btn-lg" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Loading...">
             More
           </button>
         </div>
@@ -129,7 +136,7 @@
       
     </div>
     
-    <div id = "divDetails" data-bind = "with: Details, modalOpened: (Details.status() == 'opened')" class = "modal  fade" tabindex = "-1" data-keyboard = "true">
+    <div id = "details" data-bind = "with: Details, modalOpened: (Details.status() == 'opened')" class = "modal  fade" tabindex = "-1" data-keyboard = "true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
         
@@ -140,14 +147,14 @@
           
           <div class = "modal-body">
           
-            <div id = "divFormula" style = "padding-bottom: 1em; padding-top: 0.5em">
+            <div id = "formula">
               <img data-bind = "attr: {src: formula().imgSrc}, visible: !$root.config.useMathJax()">
               <div data-bind = "text: formula().latexMathJax, visible: $root.config.useMathJax()"></div>
             </div>
             
-            <h5 style = "padding-top: 0.5em">Variables</h5>
+            <h5 id = "variables-header">Variables</h5>
             
-            <div id = "divVariables">
+            <div id = "variables">
             
               <table class = "table" data-bind = "visible: variables.status() == 'done'">
                 <thead>
@@ -173,11 +180,11 @@
                 </tbody>
               </table>
               
-              <div id = "divJournal" data-bind = "visible: variables.status() == 'loading'" class = "text-muted">
+              <div id = "journal" data-bind = "visible: variables.status() == 'loading'" class = "text-muted">
                 <i class = "fa fa-spinner fa-spin"></i> Loading...
               </div>
               
-              <div id = "divJournal" data-bind = "visible: variables.status() == 'error'" class = "text-danger">
+              <div id = "journal" data-bind = "visible: variables.status() == 'error'" class = "text-danger">
                 Error
               </div>
             </div>
@@ -185,7 +192,7 @@
             
             <h5>Metadata</h5>
             
-            <div id = "divJournal" data-bind = "with: metadata, visible: metadata.status() == 'done'">
+            <div id = "journal" data-bind = "with: metadata, visible: metadata.status() == 'done'">
               <span data-bind = "foreach: article.authors">
                 <a data-bind = "attr: {href: url}" target = "_blank"><span data-bind = "text: name"></span><i class="fa fa-external-link"></i></a><span data-bind = "visible: isNotLast">, </span>
               </span>
@@ -199,11 +206,11 @@
               pp. <span data-bind = "text: article.pages"></span>
             </div>
             
-            <div id = "divJournal" data-bind = "visible: metadata.status() == 'loading'" class = "text-muted">
+            <div id = "journal" data-bind = "visible: metadata.status() == 'loading'" class = "text-muted">
               <i class = "fa fa-spinner fa-spin"></i> Loading...
             </div>
             
-            <div id = "divJournal" data-bind = "visible: metadata.status() == 'error'" class = "text-danger">
+            <div id = "journal" data-bind = "visible: metadata.status() == 'error'" class = "text-danger">
               Error
             </div>
             
@@ -217,92 +224,23 @@
       </div>
     </div>
     
-    <div id = "divAbout" class = "modal fade" tabindex = "-1" data-keyboard = "true">
+    <div id = "about" class = "modal fade" tabindex = "-1" data-keyboard = "true">
       <div class = "modal-dialog modal-lg">
-        <div class = "modal-content">
-        
-          <div class = "modal-header">
-            <button type = "button" class = "close" data-dismiss = "modal">&times;</button>
-            <h4>About</h4>
-          </div>
-          
-          <div class = "modal-body">
-          
-            <dl class = "dl-horizontal">
-              <dt>Developers:</dt>
-              <dd>
-                <ul class = "list-unstyled">
-                  <li>Alik Kirillovich,</li>
-                  <li>Nikita Zhiltsov</li>
-                </ul>
-              </dd>
-              
-              <dt>Researchers:</dt>
-              <dd>
-                <ul class = "list-unstyled">
-                  <li>Olga Nevzorova,</li>
-                  <li>Nikita Zhiltsov,</li>
-                  <li>Danila Zaikin,</li>
-                  <li>Olga Zhibrik,</li>
-                  <li>Alik Kirillovich,</li>
-                  <li>Vladimir Nevzorov,</li>
-                  <li>Evgeniy Birialtsev</li>
-                </ul>
-              </dd>
-              
-              <dt>Powered by:</dt>
-              <dd>
-                <ul class = "list-inline">
-                  <li><a href = "http://jquery.com/">jQuery</a>,</li>
-                  <li><a href = "http://knockoutjs.com/">KnockoutJS</a>,</li>
-                  <li><a href = "http://getbootstrap.com/">Bootstrap</a>,</li>
-                  <li><a href = "https://github.com/jakearchibald/es6-promise">ES6-Promises</a>,</li>
-                  <li><a href = "http://www.thefigtrees.net/lee/blog/2006/04/sparql_calendar_demo_a_sparql.html">SPARQL JavaScript library</a>,</li>
-                  <li><a href = "http://www.mathjax.org/">MathJax</a></li>
-                </ul>
-              </dd>
-              
-              <dt>Actual dataset:</dt>
-              <dd>
-                <ul class = "list-unstyled">
-                  <li>
-                    1 330 articles of the „Izvestiya Vuzov. Matematika“
-                    („Proceedings of Higher Education Institutions: Mathematics“) journal published in 1997–2009
-                  </li>
-                </ul>
-              </dd>
-              
-              <dt>Our publications:</dt>
-              <dd>
-                <ol class2 = "list-unstyled">
-                  <li>
-                    O. Nevzorova, N. Zhiltsov, D. Zaikin, O. Zhibrik, A. Kirillovich, V. Nevzorov, E. Birialtsev.<br>
-                    Bringing Math to LOD: A Semantic Publishing Platform Prototype for Scientific Collections in Mathematics<br>
-                    In: 12th International Semantic Web Conference, Sydney, NSW, Australia, October 21-25, 2013, Proceedings, Part I. –
-                    Vol. 8218. – Springer Berlin Heidelberg. – 2013.
-                    <a href = "http://link.springer.com/chapter/10.1007%2F978-3-642-41335-3_24">pp 379-394</a>
-                  </li>
-                </ol>
-              </dd>
-            </dl>
-            
-          </div>
-          
-          <div class = "modal-footer">
-            <button class = "btn btn-default" data-dismiss = "modal">Close</button>
-          </div>
-          
-        </div>
+        <div class = "modal-content"></div>
       </div>
     </div>
       
-    <footer class = "navbar navbar-default navbar-fixed-bottom container" role = "navigation" style = "opacity: 0.95; margin-bottom: -5px">
+    <footer id = "footer" class = "navbar navbar-default navbar-fixed-bottom container">
       <div class = ""> 
-        <p class = "navbar-text">&copy; <a href = "http://cll.niimm.ksu.ru">Computational Linguistics Laboratory</a> at Kazan Federal University, 2014</p>
+        <p class = "navbar-text">
+          &copy; <a href = "http://cll.niimm.ksu.ru" title = "Lab’s website">Computational Linguistics Laboratory</a>
+          <a href = "mailto:alik.kirillovich@gmail.com" title = "Email us"><i class="fa fa-envelope-o"></i></a>
+          at Kazan Federal University, 2014
+        </p>
 
-        <ul class = "nav navbar-nav navbar-right">
+        <ul class = "nav navbar-nav navbar-right hidden-xs">
           <li class = "dropdown">
-            <a id = "options-button" class = "btn dropdown-toggle btn-link" type = "button" data-toggle = "dropdown" title = "Options" data-toggle = "tooltip">
+            <a id = "options-button" class = "btn dropdown-toggle btn-link" type = "button" data-toggle = "dropdown" title = "Options">
              <i class = "fa fa-gear"></i>
             </a>
             <ul class = "dropdown-menu dropdown-menu-right" role = "menu" aria-labelledby = "options-button">
@@ -316,8 +254,13 @@
             </ul>
           </li>
           <li>
-            <a class = "btn btn-link" type = "button" data-toggle = "modal" data-target = "#divAbout" title = "About" data-toggle = "tooltip">
+            <a href = "help.html" data-toggle = "modal" data-target = "#about" class = "btn btn-link" type = "button" title = "About">
               <i class = "fa fa-question-circle"></i>
+            </a>
+          </li>
+          <li>
+            <a class = "btn btn-link" data-uv-trigger type = "button" title = "Give feedback">
+              <i class = "fa fa-comment-o"></i>
             </a>
           </li>
         </ul>
@@ -327,12 +270,3 @@
     
   </body>
 </html>
-           
-           
-           
-           
-           
-                            
-                            
-                            
-                            
