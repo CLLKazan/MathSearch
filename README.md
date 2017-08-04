@@ -11,7 +11,7 @@ Our ontology-based publishing platform [1] annotates mathematical scholarly pape
 Online demo
 -----------
 
-Please try the demo hosted on [our server](http://cll.niimm.ksu.ru/mathsearch/).
+Please try the demo hosted on [our server](http://lobachevskii-dml.ru/mathsearch/).
 
 License
 ---------------------
