@@ -1,10 +1,10 @@
-﻿var Application = new (function ()
+var Application = new (function ()
   {
   var self = this;
   
   this.config = 
     {
-    endpointURL: ko.observable ("http://cll.niimm.ksu.ru:8890/sparql-auth"),
+    endpointURL: ko.observable ("http://lobachevskii-dml.ru:8890/sparql"),
     useMathJax:  ko.observable (true),
     limit:       ko.observable (25)
     }
@@ -95,7 +95,7 @@
     {
     this.get
       (
-      "DEFINE input:inference 'ivm'"+
+      //"DEFINE input:inference 'ivm'"+
       "SELECT ?concept, ?label, ?dbpedianame "+
       "WHERE"+
       "  {"+
@@ -123,7 +123,6 @@
           {
           arConcepts [arConcepts.length] = strKey;
           hshConcepts [strKey] = strConceptURI;
-
           }
         })
       self.concepts (arConcepts);
@@ -200,9 +199,9 @@
     return this.get
       (
       //"define input:inference 'ontomath'"+
-      "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>"+
+      ("PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>"+
       "SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType "+
-      "FROM <http://cll.niimm.ksu.ru/ivm>"+
+      //"FROM <http://lobachevskii-dml.ru/ivm>"+
       "WHERE"+
       "  {"+
         //"?class skos:closeMatch <"+ strConceptURI +"> ."+
@@ -218,7 +217,8 @@
       "  FILTER (str (?class) = '"+ hshConcepts [strConceptURI]  +"')"+
       "  }"+
       "LIMIT "+ Application.config.limit() +" "+
-      "OFFSET "+ intOffset +" "
+      "OFFSET "+ intOffset +" ")
+      .replace(/\s+/g, " ") //"Angle" query fix
       )
     .then (function (objResult)
       {
@@ -263,7 +263,7 @@ function SegmentType (strURI, strName)
   {
   var st = this;
   
-  this.uri       = "http://cll.niimm.ksu.ru:8890/ontologies/mocassin#" + strURI;
+  this.uri       = "http://cll.niimm.ksu.ru/ontologies/mocassin#" + strURI;
   this.name      = strName || strURI;
   this.isChecked = ko.observable(true);
   
@@ -369,6 +369,8 @@ function Instance ()
       {
       var objBindings = objResult.results.bindings[0];
       
+      console.log (objBindings);
+      
       objDetails.metadata.article
         .id (objBindings.article.value.match (/[0-9]+/)[0])
         .title (objBindings.title.value)
@@ -396,7 +398,7 @@ function Instance ()
       })
     ["catch"] (function (e)
       {
-      //console.log (e);
+      console.log (e);
       objDetails.metadata.status ("error");
       })
       
